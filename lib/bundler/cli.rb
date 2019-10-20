@@ -152,13 +152,14 @@ module Bundler
       "Use the specified gemfile instead of Gemfile"
     method_option "path", :type => :string, :banner =>
       "Specify a different path than the system default ($BUNDLE_PATH or $GEM_HOME).#{" Bundler will remember this value for future installs on this machine" unless Bundler.feature_flag.forget_cli_options?}"
-    map "c" => "check"
     def check
       remembered_flag_deprecation("path")
 
       require_relative "cli/check"
       Check.new(options).run
     end
+
+    map "c" => "check"
 
     desc "remove [GEM [GEM ...]]", "Removes gems from the Gemfile"
     long_desc <<-D
@@ -221,7 +222,6 @@ module Bundler
       "Exclude gems that are part of the specified named group."
     method_option "with", :type => :array, :banner =>
       "Include gems that are part of the specified named group."
-    map "i" => "install"
     def install
       SharedHelpers.major_deprecation(2, "The `--force` option has been renamed to `--redownload`") if ARGV.include?("--force")
 
@@ -234,6 +234,8 @@ module Bundler
         Install.new(options.dup).run
       end
     end
+
+    map "i" => "install"
 
     desc "update [OPTIONS]", "Update the current environment"
     long_desc <<-D
@@ -436,6 +438,7 @@ module Bundler
       require_relative "cli/package"
       Package.new(options).run
     end
+
     map %w[cache pack] => :package
 
     desc "exec [OPTIONS]", "Run the command in context of the bundle"
@@ -446,11 +449,12 @@ module Bundler
       bundle exec you can require and call the bundled gems as if they were installed
       into the system wide RubyGems repository.
     D
-    map "e" => "exec"
     def exec(*args)
       require_relative "cli/exec"
       Exec.new(options, args).run
     end
+
+    map "e" => "exec"
 
     desc "config NAME [VALUE]", "Retrieve or set a configuration value"
     long_desc <<-D
@@ -494,6 +498,7 @@ module Bundler
         Bundler.ui.info "Bundler version #{Bundler::VERSION}#{build_info}"
       end
     end
+
     map %w[-v --version] => :version
 
     desc "licenses", "Prints the license of all gems in the bundle"
