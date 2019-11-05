@@ -9,6 +9,7 @@ module Bundler
     include TSort
 
     def initialize(specs)
+      p 'bundler::specset: when is the specset created?'
       @specs = specs
     end
 

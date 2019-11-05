@@ -83,6 +83,7 @@ module Bundler
 
         deps = names.map {|name| Dependency.new name, version }
 
+        p '********in the plugin installer'
         definition = Definition.new(nil, deps, source_list, true)
         install_definition(definition)
       end

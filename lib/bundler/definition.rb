@@ -30,7 +30,7 @@ module Bundler
       gemfile = Pathname.new(gemfile).expand_path
 
       raise GemfileNotFound, "#{gemfile} not found" unless gemfile.file?
-
+      p 'definition: calling Dsl.evaluate'
       Dsl.evaluate(gemfile, lockfile, unlock)
     end
 
@@ -53,6 +53,8 @@ module Bundler
     # @param ruby_version [Bundler::RubyVersion, nil] Requested Ruby Version
     # @param optional_groups [Array(String)] A list of optional groups
     def initialize(lockfile, dependencies, sources, unlock, ruby_version = nil, optional_groups = [], gemfiles = [])
+      p 'definition.rb: WHEN IS THIS?'
+      p dependencies
       if [true, false].include?(unlock)
         @unlocking_bundler = false
         @unlocking = unlock
@@ -89,14 +91,19 @@ module Bundler
         if unlock != true
           @locked_deps    = @locked_gems.dependencies
           @locked_specs   = SpecSet.new(@locked_gems.specs)
+          p 'if unlock is not true, in definitin#initialize'
+          p @locked_gems.specs
+          p @locked_specs
           @locked_sources = @locked_gems.sources
         else
+          p 'if unlock is true, in definitin#initialize'
           @unlock         = {}
           @locked_deps    = {}
           @locked_specs   = SpecSet.new([])
           @locked_sources = []
         end
       else
+        p 'if no lockfile, in definitin#initialize'
         @unlock         = {}
         @platforms      = []
         @locked_gems    = nil
@@ -265,6 +272,7 @@ module Bundler
     end
 
     def index
+      p 'definition#index'
       @index ||= Index.build do |idx|
         dependency_names = @dependencies.map(&:name)
 

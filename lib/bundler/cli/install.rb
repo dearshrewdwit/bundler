@@ -8,6 +8,14 @@ module Bundler
     end
 
     def run
+      puts '----'
+      puts 'In run method CLI install: '
+
+      puts 'OPTIONS: '
+      p @options
+      puts '----'
+
+
       Bundler.ui.level = "error" if options[:quiet]
 
       warn_if_root
@@ -56,13 +64,17 @@ module Bundler
         Bundler::SharedHelpers.major_deprecation 2,
           "The --binstubs option will be removed in favor of `bundle binstubs`"
       end
-
       Plugin.gemfile_install(Bundler.default_gemfile) if Bundler.feature_flag.plugins?
-
+      p 'AFTER when does definition get created?'
       definition = Bundler.definition
       definition.validate_runtime!
 
+      p "---"
+      p 'in CLI::Installer, after definition'
+      p definition
+      p options
       installer = Installer.install(Bundler.root, definition, options)
+
       Bundler.load.cache if Bundler.app_cache.exist? && !options["no-cache"] && !Bundler.frozen_bundle?
 
       Bundler.ui.confirm "Bundle complete! #{dependencies_count_for(definition)}, #{gems_installed_for(definition)}."
@@ -83,6 +95,7 @@ module Bundler
         require_relative "clean"
         Bundler::CLI::Clean.new(options).run
       end
+      p "install.rb THE END"
     rescue GemNotFound, VersionConflict => e
       if options[:local] && Bundler.app_cache.exist?
         Bundler.ui.warn "Some gems seem to be missing from your #{Bundler.settings.app_cache_path} directory."

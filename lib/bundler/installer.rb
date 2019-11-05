@@ -68,8 +68,12 @@ module Bundler
     # require paths and save them in a `setup.rb` file. See `bundle standalone --help` for more
     # information.
     def run(options)
-      create_bundle_path
+      puts 'In run method installer: '
 
+      puts 'OPTIONS: '
+      p options
+      create_bundle_path
+      p "before process lock"
       ProcessLock.lock do
         if Bundler.frozen_bundle?
           @definition.ensure_equivalent_gemfile_and_lockfile(options[:deployment])
@@ -81,6 +85,17 @@ module Bundler
           return
         end
 
+        # p @definition.dependencies
+        if options[:avoid]
+          p 'in avoid if statement'
+          @definition.dependencies.each do |dep|
+            next unless options[:avoid].include?(dep.name)
+            dep.avoid
+            p dep
+          end
+        end
+        # p @definition.dependencies
+
         if resolve_if_needed(options)
           ensure_specs_are_compatible!
           warn_on_incompatible_bundler_deps
@@ -89,11 +104,13 @@ module Bundler
         else
           options[:jobs] = 1 # to avoid the overhead of Bundler::Worker
         end
+        p "before install"
         install(options)
 
         lock unless Bundler.frozen_bundle?
         Standalone.new(options[:standalone], @definition).generate if options[:standalone]
       end
+      p "at end of run"
     end
 
     def generate_bundler_executable_stubs(spec, options = {})
@@ -279,8 +296,12 @@ module Bundler
     end
 
     def install_in_parallel(size, standalone, force = false)
+      p "install in parallel"
+      p @definition.dependencies
       spec_installations = ParallelInstaller.call(self, @definition.specs, size, standalone, force)
       spec_installations.each do |installation|
+        p 'in the installation block'
+        p installation.name
         post_install_messages[installation.name] = installation.post_install_message if installation.has_post_install_message?
       end
     end
