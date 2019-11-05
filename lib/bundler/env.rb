@@ -49,6 +49,7 @@ module Bundler
       end
 
       if print_gemspecs
+        p "\t\tin env.rb: creating dsl"
         dsl = Dsl.new.tap {|d| d.eval_gemfile(Bundler.default_gemfile) }
         out << "\n## Gemspecs\n" unless dsl.gemspecs.empty?
         dsl.gemspecs.each do |gs|

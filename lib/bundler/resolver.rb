@@ -17,6 +17,11 @@ module Bundler
     #   collection of gemspecs is returned. Otherwise, nil is returned.
     def self.resolve(requirements, index, source_requirements = {}, base = [], gem_version_promoter = GemVersionPromoter.new, additional_base_requirements = [], platforms = nil)
       platforms = Set.new(platforms) if platforms
+      p '-----in resolver-----'
+      p 'source reqs'
+      source_requirements.each { |key, value| p value.dependency_names }
+      p 'reqs'
+      requirements.each { |req| p req.name }
       base = SpecSet.new(base) unless base.is_a?(SpecSet)
       resolver = new(index, source_requirements, base, gem_version_promoter, additional_base_requirements, platforms)
       result = resolver.start(requirements)
@@ -26,6 +31,7 @@ module Bundler
     def initialize(index, source_requirements, base, gem_version_promoter, additional_base_requirements, platforms)
       @index = index
       @source_requirements = source_requirements
+      # @source_requirements.each { |key, value| p value.dependency_names }
       @base = base
       @resolver = Molinillo::Resolver.new(self, self)
       @search_for = {}
@@ -43,6 +49,8 @@ module Bundler
     end
 
     def start(requirements)
+      p 'in resolver #start'
+      p requirements
       @gem_version_promoter.prerelease_specified = @prerelease_specified = {}
       requirements.each {|dep| @prerelease_specified[dep.name] ||= dep.prerelease? }
 

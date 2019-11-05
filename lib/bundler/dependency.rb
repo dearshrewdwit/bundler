@@ -84,10 +84,13 @@ module Bundler
     end.freeze
 
     def initialize(name, version, options = {}, &blk)
+      p 'dependency#initialize'
+      p name, version, type
       type = options["type"] || :runtime
       super(name, version, type)
 
       @autorequire    = nil
+      @avoid          = false
       @groups         = Array(options["group"] || :default).map(&:to_sym)
       @source         = options["source"]
       @git            = options["git"]
@@ -98,6 +101,16 @@ module Bundler
       @gemfile        = options["gemfile"]
 
       @autorequire = Array(options["require"] || []) if options.key?("require")
+    end
+
+    # is this a useful place to set state, or is there a better place?
+    def avoid?
+      @avoid
+    end
+
+    def avoid
+      p 'calling avoid'
+      @avoid = true
     end
 
     # Returns the platforms this dependency is valid for, in the same order as

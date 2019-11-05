@@ -64,6 +64,9 @@ module Bundler
     end
 
     def install
+      p "in gem installer"
+      p spec
+      return if spec.name == 'rack'
       spec.source.install(spec, :force => force, :ensure_builtin_gems_cached => standalone, :build_args => Array(spec_settings))
     end
 

@@ -39,12 +39,16 @@ module Bundler
     end
 
     def eval_gemfile(gemfile, contents = nil)
+
       expanded_gemfile_path = Pathname.new(gemfile).expand_path(@gemfile && @gemfile.parent)
       original_gemfile = @gemfile
       @gemfile = expanded_gemfile_path
       @gemfiles << expanded_gemfile_path
       contents ||= Bundler.read_file(@gemfile.to_s)
+      p contents
+      p '** before dsl#eval_gemfile'
       instance_eval(contents.dup.tap{|x| x.untaint if RUBY_VERSION < "2.7" }, gemfile.to_s, 1)
+      p '** after dsl#eval_gemfile'
     rescue Exception => e # rubocop:disable Lint/RescueException
       message = "There was an error " \
         "#{e.is_a?(GemfileEvalError) ? "evaluating" : "parsing"} " \
@@ -56,6 +60,7 @@ module Bundler
     end
 
     def gemspec(opts = nil)
+      p 'in dsl#gemspec'
       opts ||= {}
       path              = opts[:path] || "."
       glob              = opts[:glob]
@@ -76,6 +81,7 @@ module Bundler
         @gemspecs << spec
 
         gem_platforms = Bundler::Dependency::REVERSE_PLATFORM_MAP[Bundler::GemHelpers.generic_local_platform]
+
         gem spec.name, :name => spec.name, :path => path, :glob => glob, :platforms => gem_platforms
 
         group(development_group) do
@@ -92,14 +98,17 @@ module Bundler
     end
 
     def gem(name, *args)
+      p 'WHEN AM I CALLED? dsl#gem: gem args'
+      p args
       options = args.last.is_a?(Hash) ? args.pop.dup : {}
       options["gemfile"] = @gemfile
       version = args || [">= 0"]
 
       normalize_options(name, version, options)
 
+      p 'in dsl.rb: creating dependecies'
       dep = Dependency.new(name, version, options)
-
+      p dep
       # if there's already a dependency with this name we try to prefer one
       if current = @dependencies.find {|d| d.name == dep.name }
         deleted_dep = @dependencies.delete(current) if current.type == :development
@@ -231,6 +240,8 @@ module Bundler
     end
 
     def to_definition(lockfile, unlock)
+      p '********dsl: creating a definition'
+      p @dependencies
       Definition.new(lockfile, @dependencies, @sources, unlock, @ruby_version, @optional_groups, @gemfiles)
     end
 

@@ -41,7 +41,9 @@ module Bundler
       end
 
       def ignorable_dependency?(dep)
-        dep.type == :development || dep.name == @name
+        p 'parallel installer: ignorable dependency?'
+        p dep
+        dep.type == :development || dep.name == @name  || dep.avoid?
       end
 
       # Checks installed dependencies against spec's dependencies to make
@@ -133,6 +135,7 @@ module Bundler
   private
 
     def install_with_worker
+      p 'install with workers'
       enqueue_specs
       process_specs until finished_installing?
     end
@@ -153,6 +156,8 @@ module Bundler
 
     def do_install(spec_install, worker_num)
       Plugin.hook(Plugin::Events::GEM_BEFORE_INSTALL, spec_install)
+      p 'inside parallel installer #do_install'
+      p spec_install.spec
       gem_installer = Bundler::GemInstaller.new(
         spec_install.spec, @installer, @standalone, worker_num, @force
       )
@@ -162,6 +167,7 @@ module Bundler
         raise e, "#{e}\n\n#{require_tree_for_spec(spec_install.spec)}"
       end
       if success
+        p 'inside the installation state conditional'
         spec_install.state = :installed
         spec_install.post_install_message = message unless message.nil?
       else
@@ -218,7 +224,6 @@ module Bundler
     def enqueue_specs
       @specs.select(&:ready_to_enqueue?).each do |spec|
         next if @rake && !@rake.installed? && spec.name != @rake.name
-
         if spec.dependencies_installed? @specs
           spec.state = :enqueued
           worker_pool.enq spec

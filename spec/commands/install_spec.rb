@@ -275,6 +275,19 @@ RSpec.describe "bundle install with gem sources" do
         expect(the_bundle).to include_gems "rack 1.0"
       end
 
+      it "avoids specifiied gem" do
+        p '--before bundle install'
+        bundle "install --avoid rack"
+
+        # lockfile = File.read(bundled_app("Gemfile.lock"))
+        # p 'before expectation'
+        # p the_bundle.locked_gems
+        # expect(lockfile).to match(/no dependencies/)
+        # p the_bundle.locked_gems.dependencies.keys.empty?
+        expect(the_bundle.locked_gems.dependencies.keys).not_to include('rack')
+        # expect(the_bundle).not_to include_gems("rack")
+      end
+
       it "allows running bundle install --system without deleting foo", :bundler => "< 3" do
         bundle "install", forgotten_command_line_options(:path => "vendor")
         bundle "install", forgotten_command_line_options(:system => true)

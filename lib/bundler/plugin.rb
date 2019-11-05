@@ -74,6 +74,8 @@ module Bundler
     # @param [Proc] block that can be evaluated for (inline) Gemfile
     def gemfile_install(gemfile = nil, &inline)
       Bundler.settings.temporary(:frozen => false, :deployment => false) do
+
+        p 'plugin.rb: create dsl and definition'
         builder = DSL.new
         if block_given?
           builder.instance_eval(&inline)
@@ -81,9 +83,9 @@ module Bundler
           builder.eval_gemfile(gemfile)
         end
         definition = builder.to_definition(nil, true)
-
+        print 'empty: ', definition, "\n"
         return if definition.dependencies.empty?
-
+        p 'empty dependencies, so not printed'
         plugins = definition.dependencies.map(&:name).reject {|p| index.installed? p }
         installed_specs = Installer.new.install_definition(definition)
 
